@@ -14,7 +14,6 @@ import random
 import math
 from pprint import pprint
 
-# y_train shape should be samples x 1 (COLUMN MATRIX!!!!!)
 def Arodz(X, Y, numberOfFeatures):
     # instantiate an empty PyMC3 model
     basic_model = pm.Model()
@@ -110,30 +109,49 @@ def featureSelection_flat(data, targetSize=50):
     return [[x for i, x in enumerate(sample) if i not in indexesToRemove] for sample in data]
 
 
-C1 = 0
-C2 = 8
+def preprocess(X, Y, C0, C1):
+    """Takes in a dataset from keras.datasets.mnist in two arrays, 
+    one with samples and the other with the labels at corresponding indices, 
+    and applies p-reprocessing rules, including reducing the samples to only those
+    labelled with C0 or C1, flattening the 2D samples, and normalizing sample values
+    into the [0, 1] range.
+
+    # Arguments
+        X: The array of MNIST samples
+        Y: The array of MNIST labels
+        C0: The label of class 0
+        C1: The label of class 1
+    
+    # Returns
+        X: The preprocessed sample set
+        Y: The preprocessed label set
+    """
+    # Filter the datasets down to just the required classes
+    X = [_ for i, _ in enumerate(X) if Y[i] == C0 or Y[i] == C1]
+    Y = [y for y in Y if y == C0 or y == C1]
+    
+    # Flatten the 2D representations of the samlpes into 1D arrays
+    X = np.reshape(X, (len(X), len(X[0])*len(X[0])))
+
+    # Normalize sample values to be between 0 and 1
+    # X = [[x/256 for x in sample] for sample in X]
+    
+    # Normalize class labels to be 0 and 1
+    Y = [0 if y == C0 else 1 for y in Y]
+
+    return X, Y
+
 
 def main():
+    C0 = 0
+    C1 = 8
+
+    # Load the train and test sets from MNIST
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-    # Filter the datasets down to just the required classes
-    x_train = [_ for i, _ in enumerate(x_train) if y_train[i] == C1 or y_train[i] == C2]
-    y_train = [x for x in y_train if x == C1 or x == C2]
-    x_test = [_ for i, _ in enumerate(x_test) if y_test[i] == C1 or y_test[i] == C2]
-    y_test = [x for x in y_test if x == C1 or x == C2]
-
-    # Flatten the 2D representations of the samlpes into 1D arrays
-    x_train = np.reshape(x_train, (len(x_train), len(x_train[0])*len(x_train[0])))
-    x_test = np.reshape(x_test, (len(x_test), len(x_test[0])*len(x_test[0])))
-
-
-    # Normalize values to be between 0 and 1
-    # x_train = [[x/256 for x in sample] for sample in x_train]
-    # x_test = [[x/256 for x in sample] for sample in x_test]
-    # print(x_train[0])
-
-    # Normalize class labels to be 0 and 1 (only need to change the 8s to 1s)
-    y_train = [0 if x == 0 else 1 for x in y_train]
+    # Apply preprocessing to the training and test sets
+    x_train, y_train = preprocess(x_train, y_train, C0, C1)
+    # x_test, y_test = preprocess(x_test, y_test, C0, C1)
     
     # x_train = featureSelection_flat(x_train)
     # print(x_train[0])
@@ -141,12 +159,11 @@ def main():
     N = len(x_train) # Number of samples
     numberOfFeatures = len(x_train[0]) # Number of features in a sample
     
-    print(N, len(y_train), numberOfFeatures)
+    print(N, numberOfFeatures)
 
     sample_size = len(x_train)
     x_train_sample = x_train[:sample_size]
     y_train_sample = np.array(y_train[:sample_size]).reshape(sample_size, 1)
-    print(y_train_sample)
 
     Arodz(x_train_sample, y_train_sample, numberOfFeatures)
 
