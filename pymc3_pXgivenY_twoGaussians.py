@@ -113,4 +113,4 @@ with basic_model:
 
 pm.traceplot(trace)
 pm.summary(trace)
-
+plt.show()
