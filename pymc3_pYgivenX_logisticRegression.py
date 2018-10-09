@@ -15,12 +15,13 @@ np.random.seed(123)
 
 #number of samples in total
 sCnt=1000;
-numberOfFeatures=2;
+numberOfFeatures=3;
 
 # true parameters w and b
 true_w=np.zeros((numberOfFeatures,1));
 true_w[0]=-0.5;
 true_w[1]=1.3;
+true_w[2]=1.3;
 true_b=-0.3;
 
 # sample some random point in 2D feature space
@@ -28,7 +29,7 @@ X=np.random.randn(sCnt,numberOfFeatures).astype(dtype='float32');
 
 # calculate u=w^Tx+b
 #true_u = true_w1*X[:,0] + true_w2*X[:,1] + true_b;
-true_u = np.transpose(true_w)*X + true_b;
+true_u = np.dot(X,true_w) + true_b;
 
 # P(+1|x)=a(u) #see slides for def. of a(u)
 probPlusOne=1.0/(1.0+np.exp(-1.0*true_u));
@@ -61,11 +62,16 @@ with basic_model:
     b  = pm.Normal('estimated_b',0,100);
 
     # calculate u=w^Tx+b
+    ww=pm.Deterministic('my_w_as_mx',T.shape_padright(w,1));
+    
     # here w, b are unknown to be estimated from data
     # X is the known data matrix [samples x features]
-    u = w*X + b;
+    u = pm.Deterministic('my_u',T.dot(X,ww) + b);
+#    u = pm.Deterministic('my_u',X*w + b);
+    
+    
     # P(+1|x)=a(u) #see slides for def. of a(u)
-    prob = 1.0 / (1.0 + T.exp(-1.0*u));
+    prob = pm.Deterministic('my_prob',1.0 / (1.0 + T.exp(-1.0*u)));
     
     # class +1 is comes from a probability distribution with probability "prob" for +1, and 1-prob for class 0
     # here Y is the known vector of classes
@@ -78,7 +84,7 @@ with basic_model:
 # now perform maximum likelihood (actually, maximum a posteriori (MAP), since we have priors) estimation
 # map_estimate1 is a dictionary: "parameter name" -> "it's estimated value"
 map_estimate1 = pm.find_MAP(model=basic_model)
-
+'''
 # we can also do MCMC sampling from the distribution over the parameters
 # and e.g. get confidence intervals
 with basic_model:
@@ -96,3 +102,4 @@ with basic_model:
 pm.traceplot(trace)
 pm.summary(trace)
 plt.show()
+'''
