@@ -49,37 +49,21 @@ def Arodz(X, Y):
     # now perform maximum likelihood (actually, maximum a posteriori (MAP), since we have priors) estimation
     # map_estimate1 is a dictionary: "parameter name" -> "it's estimated value"
     map_estimate1 = pm.find_MAP(model=basic_model)
-    pprint(map_estimate1)
+    # pprint(map_estimate1)
 
-    # we can also do MCMC sampling from the distribution over the parameters
-    # and e.g. get confidence intervals
-    # with basic_model:
-    #     # obtain starting values via MAP
-    #     start = pm.find_MAP()
-
-    #     # instantiate sampler
-    #     step = pm.Slice()
-
-    #     # draw 10000 posterior samples
-    #     # can take rather long time
-    #     # trace = pm.sample()
-    #     trace = pm.sample(10000, step=step, start=start)
-
-    # pm.traceplot(trace)
-    # pm.summary(trace)
-    # plt.show()
+    return map_estimate1['estimated_w'], map_estimate1['estimated_b']
 
 
 def featureSelection_flat(data, targetSize=50):
     """Takes in an array of samples and trims off features
-    with low appearance rates until <=50 remain
+    with low appearance rates until 50 or less remain
 
     # Arguments
         data: the array of samples, each sample being an array of integers
         targetSize: the target number of features, default 50
     
     # Returns
-        The input data reduced to <=50 features
+        The input data reduced to 50 features
     """
     numFeatures = len(data[0])
     numToRemove = numFeatures - targetSize
