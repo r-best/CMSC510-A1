@@ -29,16 +29,20 @@ def Arodz(X, Y, numberOfFeatures):
         b  = pm.Normal('estimated_b',0,100)
 
         # calculate u=w^Tx+b
+        ww=pm.Deterministic('my_w_as_mx',T.shape_padright(w,1))
+        
         # here w, b are unknown to be estimated from data
         # X is the known data matrix [samples x features]
-        u = w*X + b
+        u = pm.Deterministic('my_u',T.dot(X,ww) + b)
+        # u = pm.Deterministic('my_u',X*w + b);
+        
         # P(+1|x)=a(u) #see slides for def. of a(u)
-        prob = 1.0 / (1.0 + T.exp(-1.0*u))
+        prob = pm.Deterministic('my_prob',1.0 / (1.0 + T.exp(-1.0*u)))
         
         # class +1 is comes from a probability distribution with probability "prob" for +1, and 1-prob for class 0
         # here Y is the known vector of classes
         # prob is (indirectly coming from the estimate of w,b and the data x)
-        Y_obs=pm.Bernoulli('Y_obs', p=prob, observed=Y)
+        Y_obs=pm.Bernoulli('Y_obs',p=prob,observed = Y)
     # done with setting up the model
 
     # now perform maximum likelihood (actually, maximum a posteriori (MAP), since we have priors) estimation
