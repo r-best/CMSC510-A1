@@ -14,7 +14,9 @@ import random
 import math
 from pprint import pprint
 
-def Arodz(X, Y, numberOfFeatures):
+def Arodz(X, Y):
+    numberOfFeatures = len(X[0])
+
     # instantiate an empty PyMC3 model
     basic_model = pm.Model()
 
@@ -155,17 +157,14 @@ def main():
     
     # x_train = featureSelection_flat(x_train)
     # print(x_train[0])
-
-    N = len(x_train) # Number of samples
-    numberOfFeatures = len(x_train[0]) # Number of features in a sample
     
-    print(N, numberOfFeatures)
+    print(len(x_train), len(x_train[0]))
 
     sample_size = len(x_train)
     x_train_sample = x_train[:sample_size]
     y_train_sample = np.array(y_train[:sample_size]).reshape(sample_size, 1)
 
-    Arodz(x_train_sample, y_train_sample, numberOfFeatures)
+    Arodz(x_train_sample, y_train_sample)
 
 
 if __name__ == '__main__':
