@@ -60,8 +60,9 @@ def test(w, b, testX, testY):
     # print(w)
     guessY = []
     for item in testX:
-        label = (w*item)[0][0]+b
-        # print(label)
+        u = T.dot(item,w).eval() + b
+        label = 1.0 / (1.0 + T.exp(-1.0*u).eval())
+        print(label)
         guessY.append(label)
     print(guessY[0])
     
@@ -86,7 +87,7 @@ def main():
     
     # Apply feature selection to training set
     print(len(x_train), len(x_train[0]))
-    x_train = utils.featureSelection(x_train)
+    # x_train = utils.featureSelection(x_train)
     print(len(x_train), len(x_train[0]))
 
     sample_size = len(x_train)
