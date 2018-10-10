@@ -56,14 +56,14 @@ def Arodz(X, Y):
 
 def featureSelection_flat(data, targetSize=50):
     """Takes in an array of samples and trims off features
-    with low appearance rates until 50 or less remain
+    with low appearance rates until targetSize or less remain
 
     # Arguments
         data: the array of samples, each sample being an array of integers
         targetSize: the target number of features, default 50
     
     # Returns
-        The input data reduced to 50 features
+        The input data reduced to targetSize features
     """
     numFeatures = len(data[0])
     numToRemove = numFeatures - targetSize
@@ -72,27 +72,25 @@ def featureSelection_flat(data, targetSize=50):
     if numToRemove <= 0:
         return data
     
-    # Calculate frequency counts of all features
-    featureCounts = np.zeros(numFeatures)
-    for sample in data:
-        for i, feature in enumerate(sample):
-            if feature > 0:
-                featureCounts[i] += 1
-    
-    # Append the least frequently occurring element
-    indexesToRemove = []
+    data = data.T
+
+    featureCounts = []
+    for feature in data:
+        featureCounts.append(sum([0 if x == 0 else 1 for x in feature]))
+
+    indexesToDelete = []
     while numToRemove > 0:
-        
-        minIndex = (-1, len(data)+1)
+        min = 0
         for i, _ in enumerate(featureCounts):
-            if featureCounts[i] < featureCounts[minIndex]:
-                minIndex = i
-                featureCounts[i] = len(data)+1
-        indexesToRemove.append(minIndex)
+            if featureCounts[i] < featureCounts[min]:
+                min = i
+        indexesToDelete.append(min)
+        featureCounts[min] = len(data[0])+1
         numToRemove -= 1
-    print(indexesToRemove)
-    # Return the dataset without the features at the indexes included in indexesToRemove
-    return [[x for i, x in enumerate(sample) if i not in indexesToRemove] for sample in data]
+
+    data = [_ for i, _ in enumerate(data) if i not in indexesToDelete]
+
+    return np.array(data).T
 
 
 def preprocess(X, Y, C0, C1):
@@ -115,6 +113,8 @@ def preprocess(X, Y, C0, C1):
     # Filter the datasets down to just the required classes
     X = [_ for i, _ in enumerate(X) if Y[i] == C0 or Y[i] == C1]
     Y = [y for y in Y if y == C0 or y == C1]
+
+    X = np.array(X)
     
     # Flatten the 2D representations of the samlpes into 1D arrays
     X = np.reshape(X, (len(X), len(X[0])*len(X[0])))
@@ -141,7 +141,7 @@ def main():
     
     # x_train = featureSelection_flat(x_train)
     # print(x_train[0])
-    
+
     print(len(x_train), len(x_train[0]))
 
     sample_size = len(x_train)
