@@ -59,7 +59,7 @@ def featureSelection_flat(data, targetSize=50):
     with low appearance rates until targetSize or less remain
 
     # Arguments
-        data: the array of samples, each sample being an array of integers
+        data: the numPy array of samples, each sample being an array of integers
         targetSize: the target number of features, default 50
     
     # Returns
@@ -107,14 +107,12 @@ def preprocess(X, Y, C0, C1):
         C1: The label of class 1
     
     # Returns
-        X: The preprocessed sample set
-        Y: The preprocessed label set
+        X: The preprocessed sample set as a numPy array
+        Y: The preprocessed label set as a numPy array
     """
     # Filter the datasets down to just the required classes
     X = [_ for i, _ in enumerate(X) if Y[i] == C0 or Y[i] == C1]
     Y = [y for y in Y if y == C0 or y == C1]
-
-    X = np.array(X)
     
     # Flatten the 2D representations of the samlpes into 1D arrays
     X = np.reshape(X, (len(X), len(X[0])*len(X[0])))
@@ -125,7 +123,25 @@ def preprocess(X, Y, C0, C1):
     # Normalize class labels to be 0 and 1
     Y = [0 if y == C0 else 1 for y in Y]
 
-    return X, Y
+    return np.array(X), np.array(Y)
+
+
+def test(w, b, testX, testY):
+    w = w.reshape(len(w), 1)
+    # print(w)
+    guessY = []
+    for item in testX:
+        label = (w*item)[0][0]+b
+        # print(label)
+        guessY.append(label)
+    print(guessY[0])
+    
+    correct = 0
+    for i, item in enumerate(guessY):
+        if item == testY[i]:
+            correct += 1
+    
+    print(correct, len(testY))
 
 
 def main():
@@ -137,18 +153,19 @@ def main():
 
     # Apply preprocessing to the training and test sets
     x_train, y_train = preprocess(x_train, y_train, C0, C1)
-    # x_test, y_test = preprocess(x_test, y_test, C0, C1)
+    x_test, y_test = preprocess(x_test, y_test, C0, C1)
     
-    # x_train = featureSelection_flat(x_train)
-    # print(x_train[0])
-
+    print(len(x_train), len(x_train[0]))
+    x_train = featureSelection_flat(x_train)
     print(len(x_train), len(x_train[0]))
 
     sample_size = len(x_train)
     x_train_sample = x_train[:sample_size]
     y_train_sample = np.array(y_train[:sample_size]).reshape(sample_size, 1)
 
-    Arodz(x_train_sample, y_train_sample)
+    w, b = Arodz(x_train_sample, y_train_sample)
+
+    test(w, b, x_test, y_test)
 
 
 if __name__ == '__main__':
