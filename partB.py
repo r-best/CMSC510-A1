@@ -1,8 +1,7 @@
-##
-# Robert Best
-# V00742880
-# Classes 0 and 8
-##
+'''
+Robert Best
+V00742880 - Classes 0 and 8
+'''
 
 from keras.datasets import mnist
 import pymc3 as pm
@@ -54,7 +53,7 @@ def Arodz(X, Y):
     return map_estimate1['estimated_w'], map_estimate1['estimated_b']
 
 
-def featureSelection_flat(data, targetSize=50):
+def featureSelection(data, targetSize=50):
     """Takes in an array of samples and trims off features
     with low appearance rates until targetSize or less remain
 
@@ -121,9 +120,9 @@ def preprocess(X, Y, C0, C1):
     # X = [[x/256 for x in sample] for sample in X]
     
     # Normalize class labels to be 0 and 1
-    Y = [0 if y == C0 else 1 for y in Y]
+    Y = np.fromiter((0 if y == C0 else 1 for y in Y), int)
 
-    return np.array(X), np.array(Y)
+    return X, Y
 
 
 def test(w, b, testX, testY):
@@ -141,7 +140,7 @@ def test(w, b, testX, testY):
         if item == testY[i]:
             correct += 1
     
-    print(correct, len(testY))
+    print("{}/{} samples labelled correctly - {}% accuracy".format(correct, len(testY), correct/len(testY)*100))
 
 
 def main():
@@ -155,8 +154,9 @@ def main():
     x_train, y_train = preprocess(x_train, y_train, C0, C1)
     x_test, y_test = preprocess(x_test, y_test, C0, C1)
     
+    # Apply feature selection to training set
     print(len(x_train), len(x_train[0]))
-    x_train = featureSelection_flat(x_train)
+    x_train = featureSelection(x_train)
     print(len(x_train), len(x_train[0]))
 
     sample_size = len(x_train)
