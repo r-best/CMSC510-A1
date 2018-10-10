@@ -53,20 +53,17 @@ def Arodz(x0, x1, numberOfFeatures):
 
     # we can also do MCMC sampling from the distribution over the parameters
     # and e.g. get confidence intervals
-    with basic_model:
-        # obtain starting values via MAP
-        start = pm.find_MAP()
+    # with basic_model:
+    #     # instantiate sampler
+    #     step = pm.Slice()
 
-        # instantiate sampler
-        step = pm.Slice()
+    #     # draw 10000 posterior samples
+    #     # can take rather long time
+    #     trace = pm.sample(10000, step=step, start=start)
 
-        # draw 10000 posterior samples
-        # can take rather long time
-        trace = pm.sample(10000, step=step, start=start)
-
-    pm.traceplot(trace)
-    pm.summary(trace)
-    plt.show()
+    # pm.traceplot(trace)
+    # pm.summary(trace)
+    # plt.show()
 
 
 
