@@ -56,12 +56,10 @@ def Arodz(X, Y):
 
 
 def test(w, b, testX, testY):
-    w = w.reshape(len(w), 1)
-    # print(w)
     guessY = []
     for item in testX:
         u = T.dot(item,w).eval() + b
-        label = 1.0 / (1.0 + T.exp(-1.0*u).eval())
+        label = int(1.0 / (1.0 + T.exp(-1.0*u).eval()))
         print(label)
         guessY.append(label)
     print(guessY[0])
@@ -79,21 +77,26 @@ def main():
     C1 = 8
 
     # Load the train and test sets from MNIST
+    print("Loading datasets from MNIST...")
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
     # Apply preprocessing to the training and test sets
+    print("Preprocessing training set...")
     x_train, y_train = utils.preprocess(x_train, y_train, C0, C1)
+    print("Preprocessing testing set...")
     x_test, y_test = utils.preprocess(x_test, y_test, C0, C1)
     
     # Apply feature selection to training set
-    print(len(x_train), len(x_train[0]))
+    print("Applying feature selection...")
     # x_train = utils.featureSelection(x_train)
-    print(len(x_train), len(x_train[0]))
 
+    # Sample training set
     sample_size = len(x_train)
     x_train_sample = x_train[:sample_size]
     y_train_sample = np.array(y_train[:sample_size]).reshape(sample_size, 1)
 
+    # Obtain MAP estimates
+    print("Running Dr Arodz's code to obtain MAP estimates of w and b")
     w, b = Arodz(x_train_sample, y_train_sample)
 
     test(w, b, x_test, y_test)
