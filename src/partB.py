@@ -62,7 +62,6 @@ def test(w, b, testX, testY):
         label = int(1.0 / (1.0 + T.exp(-1.0*u).eval()))
         print(label)
         guessY.append(label)
-    print(guessY[0])
     
     correct = 0
     for i, item in enumerate(guessY):
@@ -88,7 +87,7 @@ def main():
     
     # Apply feature selection to training set
     print("Applying feature selection...")
-    # x_train = utils.featureSelection(x_train)
+    x_train, x_test = utils.featureSelection(x_train, x_test)
 
     # Sample training set
     sample_size = len(x_train)
@@ -99,6 +98,8 @@ def main():
     print("Running Dr Arodz's code to obtain MAP estimates of w and b")
     w, b = Arodz(x_train_sample, y_train_sample)
 
+    # Evaluate model accuracy
+    print("Testing model...")
     test(w, b, x_test, y_test)
 
 

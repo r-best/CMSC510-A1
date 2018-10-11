@@ -1,27 +1,28 @@
 import numpy as np
 
-def featureSelection(data, targetSize=50):
+def featureSelection(train, test, targetSize=50):
     """Takes in an array of samples and trims off features
     with low appearance rates until targetSize or less remain
 
     Arguments:
-        data: the NumPy array of samples, each sample being an array of integers
+        train: the NumPy array of training samples
+        test: the NumPy array of test samples
         targetSize: the target number of features, default 50
     
     Returns:
         NumPy array of samples reduced to only the targetSize most frequent features
     """
-    numFeatures = len(data[0])
+    numFeatures = len(train[0])
     numToRemove = numFeatures - targetSize
 
     # If nothing to remove, we're done
     if numToRemove <= 0:
-        return data
+        return train, test
     
-    data = data.T
+    train = train.T
 
     featureCounts = []
-    for feature in data:
+    for feature in train:
         featureCounts.append(sum([0 if x == 0 else 1 for x in feature]))
 
     indexesToDelete = []
@@ -31,12 +32,13 @@ def featureSelection(data, targetSize=50):
             if featureCounts[i] < featureCounts[min]:
                 min = i
         indexesToDelete.append(min)
-        featureCounts[min] = len(data[0])+1
+        featureCounts[min] = len(train[0])+1
         numToRemove -= 1
 
-    data = [_ for i, _ in enumerate(data) if i not in indexesToDelete]
+    train = [_ for i, _ in enumerate(train) if i not in indexesToDelete]
+    test = [[_ for i, _ in enumerate(sample) if i not in indexesToDelete] for sample in test]
 
-    return np.array(data).T
+    return np.array(train).T, np.array(test)
 
 
 def preprocess(X, Y, C0, C1):
