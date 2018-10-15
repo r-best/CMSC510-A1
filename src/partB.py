@@ -75,7 +75,7 @@ def test(w, b, testX, testY):
         if label == testY[i]:
             correct += 1
     
-    print("{}/{} samples labelled correctly - {}% accuracy".format(correct, len(testY), correct/len(testY)*100))
+    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(correct, len(testY), correct/len(testY)*100))
 
 
 def main():

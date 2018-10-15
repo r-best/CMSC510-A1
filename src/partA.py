@@ -12,8 +12,12 @@ import scipy as sp
 import theano.tensor as T
 import random
 
+from utils import utils
 
-def Arodz(x0, x1, numberOfFeatures):
+
+def Arodz(x0, x1):
+    numberOfFeatures = len(x0[0])
+
     # instantiate an empty PyMC3 model
     basic_model = pm.Model()
 
@@ -46,56 +50,81 @@ def Arodz(x0, x1, numberOfFeatures):
     # now perform maximum likelihood (actually, maximum a posteriori (MAP), since we have priors) estimation
     # map_estimate1 is a dictionary: "parameter name" -> "it's estimated value"
     map_estimate1 = pm.find_MAP(model=basic_model)
-    print(map_estimate1)
+    # print(map_estimate1)
+
+    return map_estimate1['estimated_mu0'], map_estimate1['estimated_mu1'], map_estimate1['estimated_cov']
 
     #compare map_estimate1['estimated_mu1'] with true_mu1
     #same for mu_2, cov
 
-    # we can also do MCMC sampling from the distribution over the parameters
-    # and e.g. get confidence intervals
-    # with basic_model:
-    #     # instantiate sampler
-    #     step = pm.Slice()
 
-    #     # draw 10000 posterior samples
-    #     # can take rather long time
-    #     trace = pm.sample(10000, step=step, start=start)
-
-    # pm.traceplot(trace)
-    # pm.summary(trace)
-    # plt.show()
+def sampleMean(dataset):
+    mean = np.zeros(len(dataset[0]))
+    for sample in dataset:
+        for i, feature in enumerate(sample):
+            mean[i] += feature
+    return [x/len(dataset) for x in mean]
 
 
+def test(m0, m1, cov, testX0, testX1):
+    """Takes in a test set and the estimated covariance and class0/1 means.
+    Calculates the true values from the test set and determines estimate error.
 
+    Arguments:
+        m0: Estimated mean of class 0
+        m1: Estimated mean of class 1
+        cov: Estimated covariance
+        testX0: Test samples from class 0
+        testX1: Test samples from class 1
+    """
+    real_m0 = sampleMean(testX0)
+    print("Estimated class 0 mean: ", m0)
+    print("Class 0 mean of test set: ", real_m0)
+    print("Class 0 mean error", sp.spatial.distance.euclidean(m0, real_m0))
+    print()
 
+    real_m1 = sampleMean(testX1)
+    print("Estimated class 0 mean: ", m1)
+    print("Class 0 mean of test set: ", real_m1)
+    print("Class 0 mean error", sp.spatial.distance.euclidean(m1, real_m1))
+    print()
 
-C1 = 0
-C2 = 8
+    real_cov = np.cov(testX0)
+    print("Estimated covariance: ", cov)
+    print("True test set covariance: ", real_cov)
+    print("Covariance error: ")
+
 
 def main():
+    C0 = 0
+    C1 = 8
+
+    # Load the train and test sets from MNIST
+    print("Loading datasets from MNIST...")
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-    # Filter the datasets down to just the required classes
-    x_train = [_ for i, _ in enumerate(x_train) if y_train[i] == C1 or y_train[i] == C2]
-    y_train = [x for x in y_train if x == C1 or x == C2]
-    x_test = [_ for i, _ in enumerate(x_test) if y_test[i] == C1 or y_test[i] == C2]
-    y_test = [x for x in y_test if x == C1 or x == C2]
+    # Apply preprocessing to the training and test sets
+    print("Preprocessing training set...")
+    x_train, y_train = utils.preprocess(x_train, y_train, C0, C1)
+    print("Preprocessing testing set...")
+    x_test, y_test = utils.preprocess(x_test, y_test, C0, C1)
+    
+    # Apply feature selection to training set
+    print("Applying feature selection...")
+    x_train, x_test = utils.featureSelection(x_train, x_test)
 
-    # Flatten the 2D representations of the samlpes into 1D arrays
-    x_train = [[x for row in item for x in row] for item in x_train]
-    x_test = [[x for row in item for x in row] for item in x_test]
-
-    N = len(x_train) # Number of samples
-    numberOfFeatures = len(x_train[0]) # Number of features in a sample
-
-    x0 = [_ for i, _ in enumerate(x_train) if y_train[i] == C1]
-    x1 = [_ for i, _ in enumerate(x_train) if y_train[i] == C2]
+    x0_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 0]
+    x1_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 1]
+    x0_test = [_ for i, _ in enumerate(x_test) if y_test[i] == 0]
+    x1_test = [_ for i, _ in enumerate(x_test) if y_test[i] == 1]
     
     sample_size = 1000
-    x0_sample = random.sample(x0, sample_size)
-    x1_sample = random.sample(x1, sample_size)
+    x0_train_sample = random.sample(x0_train, sample_size)
+    x1_train_sample = random.sample(x1_train, sample_size)
 
-    Arodz(x0_sample, x1_sample, numberOfFeatures)
+    m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
+
+    test(m0, m1, cov, x0_test, x1_test)
 
 
 if __name__ == '__main__':
