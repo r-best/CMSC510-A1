@@ -66,7 +66,6 @@ def test(w, b, testX, testY):
         testX: Array of test set sample
         testY: Array of gold standard test set labels
     """
-    # w = w.reshape((len(w), 1))
     correct = 0
     for i, item in enumerate(testX):
         u = T.dot(item,w) + b
