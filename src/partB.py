@@ -56,16 +56,23 @@ def Arodz(X, Y):
 
 
 def test(w, b, testX, testY):
-    guessY = []
-    for item in testX:
-        u = T.dot(item,w).eval() + b
-        label = int(1.0 / (1.0 + T.exp(-1.0*u).eval()))
-        print(label)
-        guessY.append(label)
-    
+    """Uses the given estimated w and b to label the elements
+    of the given test set and checks to see how accurate the results are
+
+    Arguments:
+        w: Array of estimated feature weights
+        b: Estimated b value
+        testX: Array of test set sample
+        testY: Array of gold standard test set labels
+    """
+    w = w.reshape((len(w), 1))
     correct = 0
-    for i, item in enumerate(guessY):
-        if item == testY[i]:
+    for i, item in enumerate(testX):
+        u = T.dot(item,w) + b
+        prob = 1.0 / (1.0 + T.exp(-1.0*u))
+        label = math.floor(prob.eval())
+
+        if label == testY[i]:
             correct += 1
     
     print("{}/{} samples labelled correctly - {}% accuracy".format(correct, len(testY), correct/len(testY)*100))
@@ -86,8 +93,8 @@ def main():
     x_test, y_test = utils.preprocess(x_test, y_test, C0, C1)
     
     # Apply feature selection to training set
-    print("Applying feature selection...")
-    x_train, x_test = utils.featureSelection(x_train, x_test)
+    # print("Applying feature selection...")
+    # x_train, x_test = utils.featureSelection(x_train, x_test)
 
     # Sample training set
     sample_size = len(x_train)
