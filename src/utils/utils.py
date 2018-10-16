@@ -1,5 +1,34 @@
 import numpy as np
 
+# Sample size of training set can be provided as a percent between 0 and 1,
+#   otherwise the full training set will be used
+def parseArgs(argv):
+    """Processes command line arguments, currently the only one is the sample
+    size to use for training, given as a percentage value in the range (0, 1]
+
+    Arguments:
+        argv: array-like
+            The arguments obtained from sys.argv
+    
+    Returns:
+        sampleSize: float
+            The percentage of training samples to be used
+    """
+    sampleSize = 1
+    if len(argv) > 1:
+        try:
+            temp = float(argv[1])
+
+            if temp <= 0 or temp > 1:
+                raise ValueError
+            else:
+                sampleSize = temp
+        except ValueError:
+            print("WARN: Invalid sample size, must be a decimal value in range (0, 1]. Using full sample set for this run.")
+
+    return sampleSize
+
+
 def featureSelection(train, test, targetSize=50):
     """Takes in an array of training data and an array of testing data,
     reduces their feature size down to targetSize by removing the features

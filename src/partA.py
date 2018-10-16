@@ -68,7 +68,10 @@ def test(m0, m1, cov, testX, testY):
     """
     cov = np.linalg.inv(cov)
 
-    correct = 0
+    true0 = 0
+    false0 = 0
+    true1 = 0
+    false1 = 0
     for i, item in enumerate(testX):
         dist0 = np.subtract(item, m0).reshape((1, len(item)))
         dist0_t = np.transpose(dist0)
@@ -78,32 +81,36 @@ def test(m0, m1, cov, testX, testY):
         dist1_t = np.transpose(dist1)
         prob1 = -1*np.matmul(np.matmul(dist1, cov), dist1_t)
 
-        prob = 0
+        if prob0 > prob1:
+            if testY[i] == 0:
+                true0 += 1
+            else:
+                false0 += 1
         if prob1 > prob0:
-            prob = 1
-
-        if prob == testY[i]:
-            correct += 1
+            if testY[i] == 1:
+                true1 += 1
+            else:
+                false1 += 1
     
-    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(correct, len(testY), correct/len(testY)*100))
+    print("-------------------------------------")
+    print("|                    Predicted      |")
+    print("|       ----------------------------|")
+    print("|       |     |    0     |     1    |")
+    print("|       |-----|---------------------|")
+    print("|       |  0  |   {}    |    {}   |".format(true0, false0))
+    print("|Actual |     |          |          |")
+    print("|       |  1  |   {}    |    {}   |".format(true1, false1))
+    print("-------------------------------------")
+    
+    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
 
 
 def main(argv):
-    # Optional, read args from command line
-    # Sample size of training set can be provided as a percent between 0 and 1,
-    #   otherwise the full training set will be used
-    if len(argv) > 0:
-        try:
-            sampleSize = float(argv[0])
-
-            if sampleSize <= 0 or sampleSize > 1:
-                raise ValueError
-        except ValueError:
-            print("WARN: Invalid sample size, must be a decimal value in range (0, 1]. Using full sample set for this run.")
-            sampleSize = 1
-
     C0 = 0
     C1 = 8
+
+    # Read args from command line
+    sampleSize = utils.parseArgs(argv)
 
     # Load the train and test sets from MNIST
     print("Loading datasets from MNIST...")
@@ -134,4 +141,4 @@ def main(argv):
 
 if __name__ == '__main__':
     np.set_printoptions(linewidth=500, formatter={'float_kind': lambda x: "{0:0.3f}".format(x)})
-    main(sys.argv[1:])
+    main(sys.argv)
