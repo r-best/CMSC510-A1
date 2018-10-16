@@ -1,10 +1,10 @@
-##
-# Robert Best
-# V00742880
-# Classes 0 and 8
-##
+"""
+Robert Best
+V00742880 - Classes 0 and 8
+"""
 
 from keras.datasets import mnist
+import sys
 import pymc3 as pm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -55,14 +55,6 @@ def Arodz(x0, x1):
     return map_estimate1['estimated_mu0'], map_estimate1['estimated_mu1'], map_estimate1['estimated_cov']
 
 
-def sampleMean(dataset):
-    mean = np.zeros(len(dataset[0]))
-    for sample in dataset:
-        for i, feature in enumerate(sample):
-            mean[i] += feature
-    return [x/len(dataset) for x in mean]
-
-
 def test(m0, m1, cov, testX, testY):
     """Takes in a test set and the estimated covariance and class0/1 means.
     Calculates the true values from the test set and determines estimate error.
@@ -82,12 +74,11 @@ def test(m0, m1, cov, testX, testY):
         dist0 = np.subtract(item, m0).reshape((1, len(item)))
         dist0_t = np.transpose(dist0)
         prob0 = -1*np.matmul(np.matmul(dist0, cov), dist0_t)
-        
+
         dist1 = np.subtract(item, m1).reshape((1, len(item)))
         dist1_t = np.transpose(dist1)
         prob1 = -1*np.matmul(np.matmul(dist1, cov), dist1_t)
-        print(prob0, prob1)
-        
+
         prob = 0
         if prob1 > prob0:
             prob = 1
@@ -98,7 +89,20 @@ def test(m0, m1, cov, testX, testY):
     print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(correct, len(testY), correct/len(testY)*100))
 
 
-def main():
+def main(argv):
+    # Optional, read args from command line
+    # Sample size of training set can be provided as a percent between 0 and 1,
+    #   otherwise the full training set will be used
+    if len(argv) > 0:
+        try:
+            sampleSize = float(argv[0])
+
+            if sampleSize <= 0 or sampleSize > 1:
+                raise ValueError
+        except ValueError:
+            print("WARN: Invalid sample size, must be a decimal value in range (0, 1]. Using full sample set for this run.")
+            sampleSize = 1
+
     C0 = 0
     C1 = 8
 
@@ -116,18 +120,19 @@ def main():
     print("Applying feature selection...")
     x_train, x_test = utils.featureSelection(x_train, x_test)
 
+    # Split training set by class
     x0_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 0]
     x1_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 1]
-    
-    sample_size = 100
-    x0_train_sample = random.sample(x0_train, sample_size)
-    x1_train_sample = random.sample(x1_train, sample_size)
 
-    m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
+    # Take random sample of each class of training set
+    x0_train_sample = random.sample(x0_train, int(len(x0_train)*sampleSize))
+    x1_train_sample = random.sample(x1_train, int(len(x1_train)*sampleSize))
+
+    m0, m1, cov = Arodz(x0_train, x1_train)
 
     test(m0, m1, cov, x_test, y_test)
 
 
 if __name__ == '__main__':
     np.set_printoptions(linewidth=500, formatter={'float_kind': lambda x: "{0:0.3f}".format(x)})
-    main()
+    main(sys.argv[1:])
