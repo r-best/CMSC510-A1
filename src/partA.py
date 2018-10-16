@@ -54,9 +54,6 @@ def Arodz(x0, x1):
 
     return map_estimate1['estimated_mu0'], map_estimate1['estimated_mu1'], map_estimate1['estimated_cov']
 
-    #compare map_estimate1['estimated_mu1'] with true_mu1
-    #same for mu_2, cov
-
 
 def sampleMean(dataset):
     mean = np.zeros(len(dataset[0]))
@@ -66,7 +63,7 @@ def sampleMean(dataset):
     return [x/len(dataset) for x in mean]
 
 
-def test(m0, m1, cov, testX0, testX1):
+def test(m0, m1, cov, testX, testY):
     """Takes in a test set and the estimated covariance and class0/1 means.
     Calculates the true values from the test set and determines estimate error.
 
@@ -74,25 +71,31 @@ def test(m0, m1, cov, testX0, testX1):
         m0: Estimated mean of class 0
         m1: Estimated mean of class 1
         cov: Estimated covariance
-        testX0: Test samples from class 0
-        testX1: Test samples from class 1
+        testX: Array of test set samples
+        testY: Array of gold standard test set labels
     """
-    real_m0 = sampleMean(testX0)
-    print("Estimated class 0 mean: ", m0)
-    print("Class 0 mean of test set: ", real_m0)
-    print("Class 0 mean error", sp.spatial.distance.euclidean(m0, real_m0))
-    print()
+    cov = np.linalg.inv(cov)
+    print(cov.shape)
 
-    real_m1 = sampleMean(testX1)
-    print("Estimated class 0 mean: ", m1)
-    print("Class 0 mean of test set: ", real_m1)
-    print("Class 0 mean error", sp.spatial.distance.euclidean(m1, real_m1))
-    print()
+    correct = 0
+    for i, item in enumerate(testX):
+        dist0 = np.subtract(item, m0).reshape((1, len(item)))
+        dist0_t = np.transpose(dist0)
+        prob0 = -1*np.matmul(np.matmul(dist0, cov), dist0_t)
+        
+        dist1 = np.subtract(item, m1).reshape((1, len(item)))
+        dist1_t = np.transpose(dist1)
+        prob1 = -1*np.matmul(np.matmul(dist1, cov), dist1_t)
+        print(prob0, prob1)
+        
+        prob = 0
+        if prob1 > prob0:
+            prob = 1
 
-    real_cov = np.cov(testX0)
-    print("Estimated covariance: ", cov)
-    print("True test set covariance: ", real_cov)
-    print("Covariance error: ")
+        if prob == testY[i]:
+            correct += 1
+    
+    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(correct, len(testY), correct/len(testY)*100))
 
 
 def main():
@@ -115,17 +118,16 @@ def main():
 
     x0_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 0]
     x1_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 1]
-    x0_test = [_ for i, _ in enumerate(x_test) if y_test[i] == 0]
-    x1_test = [_ for i, _ in enumerate(x_test) if y_test[i] == 1]
     
-    sample_size = 1000
+    sample_size = 100
     x0_train_sample = random.sample(x0_train, sample_size)
     x1_train_sample = random.sample(x1_train, sample_size)
 
     m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
 
-    test(m0, m1, cov, x0_test, x1_test)
+    test(m0, m1, cov, x_test, y_test)
 
 
 if __name__ == '__main__':
+    np.set_printoptions(linewidth=500, formatter={'float_kind': lambda x: "{0:0.3f}".format(x)})
     main()
