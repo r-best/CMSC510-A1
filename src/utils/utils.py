@@ -1,16 +1,20 @@
 import numpy as np
 
 def featureSelection(train, test, targetSize=50):
-    """Takes in an array of samples and trims off features
-    with low appearance rates until targetSize or less remain
+    """Takes in an array of training data and an array of testing data,
+    reduces their feature size down to targetSize by removing the features
+    that occur the least often in the training set
 
     Arguments:
-        train: the NumPy array of training samples
-        test: the NumPy array of test samples
-        targetSize: the target number of features, default 50
+        train: array-like (2D)
+            Array of training samples, each sample being an array of features
+        test: array-like (2D)
+            Array of test samples, same format as train
+        targetSize: int
+            Target number of features, default 50
     
     Returns:
-        NumPy array of samples reduced to only the targetSize most frequent features
+        Train and test reduced to targetSize features
     """
     numFeatures = len(train[0])
     numToRemove = numFeatures - targetSize
@@ -19,7 +23,7 @@ def featureSelection(train, test, targetSize=50):
     if numToRemove <= 0:
         return train, test
     
-    train = train.T
+    train = np.transpose(train)
 
     featureCounts = []
     for feature in train:
@@ -49,21 +53,27 @@ def preprocess(X, Y, C0, C1):
     sample values into the [0, 1] range.
 
     Arguments:
-        X: Python list of MNIST samples
-        Y: Python list of MNIST labels
-        C0: The label of class 0
-        C1: The label of class 1
+        X: array-like (2D)
+            Array of MNIST samples
+        Y: array-like (1D)
+            Array of MNIST labels
+        C0: int
+            The label of class 0
+        C1: int
+            The label of class 1
     
     Returns:
-        X: The preprocessed sample set as a NumPy array
-        Y: The preprocessed label set as a NumPy array
+        X: ndarray
+            The preprocessed sample set as a NumPy array
+        Y: ndarray
+            The preprocessed label set as a NumPy array
     """
     # Filter the datasets down to just the required classes
     X = [_ for i, _ in enumerate(X) if Y[i] == C0 or Y[i] == C1]
     Y = [y for y in Y if y == C0 or y == C1]
     
-    # Flatten the 2D representations of the samlpes into 1D arrays
-    X = np.reshape(X, (len(X), len(X[0])*len(X[0])))
+    # Flatten the 2D representations of the samples into 1D arrays
+    X = np.reshape(X, (len(X), len(X[0])**2))
 
     # Normalize sample values to be between 0 and 1
     # X = [[x/256 for x in sample] for sample in X]

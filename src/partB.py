@@ -1,7 +1,7 @@
-'''
+"""
 Robert Best
 V00742880 - Classes 0 and 8
-'''
+"""
 
 from keras.datasets import mnist
 import pymc3 as pm
@@ -63,7 +63,7 @@ def test(w, b, testX, testY):
     Arguments:
         w: Array of estimated feature weights
         b: Estimated b value
-        testX: Array of test set sample
+        testX: Array of test set samples
         testY: Array of gold standard test set labels
     """
     correct = 0
