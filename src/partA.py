@@ -102,7 +102,11 @@ def test(m0, m1, cov, testX, testY):
     print("|       |  1  |   {}    |    {}   |".format(true1, false1))
     print("-------------------------------------")
     
-    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
+    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
+    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
+    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
+    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
+    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
 
 
 def main(argv):
