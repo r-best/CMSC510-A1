@@ -66,16 +66,41 @@ def test(w, b, testX, testY):
         testX: Array of test set samples
         testY: Array of gold standard test set labels
     """
-    correct = 0
+    true0 = 0
+    false0 = 0
+    true1 = 0
+    false1 = 0
     for i, item in enumerate(testX):
         u = T.dot(item,w) + b
         prob = 1.0 / (1.0 + T.exp(-1.0*u))
         label = math.floor(prob.eval())
 
-        if label == testY[i]:
-            correct += 1
+        if label == 0:
+            if testY[i] == 0:
+                true0 += 1
+            else:
+                false0 += 1
+        elif label == 1:
+            if testY[i] == 1:
+                true1 += 1
+            else:
+                false1 += 1
+
+    print("-------------------------------------")
+    print("|                    Predicted      |")
+    print("|       ----------------------------|")
+    print("|       |     |    0     |     1    |")
+    print("|       |-----|---------------------|")
+    print("|       |  0  |   {}    |    {}   |".format(true0, false0))
+    print("|Actual |     |          |          |")
+    print("|       |  1  |   {}    |    {}   |".format(true1, false1))
+    print("-------------------------------------")
     
-    print("{}/{} samples labelled correctly - {:.3f}% accuracy".format(correct, len(testY), correct/len(testY)*100))
+    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
+    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
+    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
+    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
+    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
 
 
 def main():
