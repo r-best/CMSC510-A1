@@ -67,7 +67,6 @@ def test(m0, m1, cov, testX, testY):
         testY: Array of gold standard test set labels
     """
     cov = np.linalg.inv(cov)
-    print(cov.shape)
 
     correct = 0
     for i, item in enumerate(testX):
@@ -128,7 +127,7 @@ def main(argv):
     x0_train_sample = random.sample(x0_train, int(len(x0_train)*sampleSize))
     x1_train_sample = random.sample(x1_train, int(len(x1_train)*sampleSize))
 
-    m0, m1, cov = Arodz(x0_train, x1_train)
+    m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
 
     test(m0, m1, cov, x_test, y_test)
 
