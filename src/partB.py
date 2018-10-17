@@ -4,6 +4,7 @@ V00742880 - Classes 0 and 8
 """
 
 from keras.datasets import mnist
+import sys
 import pymc3 as pm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ from utils import utils
 
 def Arodz(X, Y):
     numberOfFeatures = len(X[0])
+    Y = np.reshape(Y, (len(Y), 1))
 
     # instantiate an empty PyMC3 model
     basic_model = pm.Model()
@@ -103,9 +105,12 @@ def test(w, b, testX, testY):
     print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
 
 
-def main():
+def main(argv):
     C0 = 0
     C1 = 8
+
+    # Read args from command line
+    sampleSize = utils.parseArgs(argv)
 
     # Load the train and test sets from MNIST
     print("Loading datasets from MNIST...")
@@ -122,9 +127,10 @@ def main():
     # x_train, x_test = utils.featureSelection(x_train, x_test)
 
     # Sample training set
-    sample_size = len(x_train)
-    x_train_sample = x_train[:sample_size]
-    y_train_sample = np.array(y_train[:sample_size]).reshape(sample_size, 1)
+    sampleIndicies = random.sample(range(len(x_train)), int(len(x_train)*sampleSize))
+    x_train_sample = [_ for i, _ in enumerate(x_train) if i in sampleIndicies]
+    y_train_sample = [_ for i, _ in enumerate(y_train) if i in sampleIndicies]
+
 
     # Obtain MAP estimates
     print("Running Dr Arodz's code to obtain MAP estimates of w and b")
@@ -137,4 +143,4 @@ def main():
 
 if __name__ == '__main__':
     np.set_printoptions(linewidth=500)
-    main()
+    main(sys.argv)
