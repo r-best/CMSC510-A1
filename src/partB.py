@@ -88,15 +88,15 @@ def test(w, b, testX, testY):
             else:
                 false1 += 1
 
-    print("-------------------------------------")
-    print("|                    Predicted      |")
-    print("|       ----------------------------|")
-    print("|       |     |    0     |     1    |")
-    print("|       |-----|---------------------|")
-    print("|       |  0  |   {}    |    {}   |".format(true0, false0))
-    print("|Actual |     |          |          |")
-    print("|       |  1  |   {}    |    {}   |".format(true1, false1))
-    print("-------------------------------------")
+    print("----------------------------------------")
+    print("|                         Actual       |")
+    print("|          ----------------------------|")
+    print("|          |     |    0     |     1    |")
+    print("|          |-----|---------------------|")
+    print("|          |  0  |   {}    |    {}   |".format(true0, false0))
+    print("|Predicted |     |          |          |")
+    print("|          |  1  |   {}    |    {}   |".format(true1, false1))
+    print("----------------------------------------")
     
     print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
     print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
