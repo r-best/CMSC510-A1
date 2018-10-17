@@ -110,3 +110,49 @@ def featureSelection(train, test, targetSize=50):
     test = [[_ for i, _ in enumerate(sample) if i not in indexesToDelete] for sample in test]
 
     return np.array(train).T, np.array(test)
+
+
+def evaluate(labels, gold):
+    """Takes in an array of predicted labels and the corresponding
+    gold standard and calculates precision, recall, and accuracy.
+
+    Arguments:
+        labels: array-like (1D)
+            The predicted labels, either 1 or 0
+        gold: array-like (1D)
+            The correct labels
+    
+    Returns:
+        None
+    """
+    true0 = 0
+    false0 = 0
+    true1 = 0
+    false1 = 0
+    for i, label in enumerate(labels):
+        if label == 0:
+            if gold[i] == 0:
+                true0 += 1
+            else:
+                false0 += 1
+        elif label == 1:
+            if gold[i] == 1:
+                true1 += 1
+            else:
+                false1 += 1
+    
+    print("----------------------------------------")
+    print("|                         Actual       |")
+    print("|          ----------------------------|")
+    print("|          |     |    0     |     1    |")
+    print("|          |-----|---------------------|")
+    print("|          |  0  |   {}    |    {}   |".format(true0, false0))
+    print("|Predicted |     |          |          |")
+    print("|          |  1  |   {}    |    {}   |".format(true1, false1))
+    print("----------------------------------------")
+    
+    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
+    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
+    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
+    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
+    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(gold), (true0+true1)/len(gold)*100))

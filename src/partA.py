@@ -16,6 +16,9 @@ from utils import utils
 
 
 def Arodz(x0, x1):
+    """Takes in two sample sets, one from each class, and
+    returns the MAP estimates of the means and covariance
+    """
     numberOfFeatures = len(x0[0])
 
     # instantiate an empty PyMC3 model
@@ -55,24 +58,22 @@ def Arodz(x0, x1):
     return map_estimate1['estimated_mu0'], map_estimate1['estimated_mu1'], map_estimate1['estimated_cov']
 
 
-def test(m0, m1, cov, testX, testY):
-    """Takes in a test set and the estimated covariance and class0/1 means.
-    Calculates the true values from the test set and determines estimate error.
+def predict(m0, m1, cov, testX):
+    """Takes in the estimated covariance and class means
+    and uses them to predict labels for the given test set.
 
     Arguments:
         m0: Estimated mean of class 0
         m1: Estimated mean of class 1
         cov: Estimated covariance
-        testX: Array of test set samples
-        testY: Array of gold standard test set labels
+        testX: Array of test set samples to label
+    
+    Yields:
+        The predicted labels for the test set
     """
     cov = np.linalg.inv(cov)
 
-    true0 = 0
-    false0 = 0
-    true1 = 0
-    false1 = 0
-    for i, item in enumerate(testX):
+    for item in testX:
         dist0 = np.subtract(item, m0).reshape((1, len(item)))
         dist0_t = np.transpose(dist0)
         prob0 = -1*np.matmul(np.matmul(dist0, cov), dist0_t)
@@ -82,31 +83,9 @@ def test(m0, m1, cov, testX, testY):
         prob1 = -1*np.matmul(np.matmul(dist1, cov), dist1_t)
 
         if prob0 > prob1:
-            if testY[i] == 0:
-                true0 += 1
-            else:
-                false0 += 1
+            yield 0
         if prob1 > prob0:
-            if testY[i] == 1:
-                true1 += 1
-            else:
-                false1 += 1
-    
-    print("----------------------------------------")
-    print("|                         Actual       |")
-    print("|          ----------------------------|")
-    print("|          |     |    0     |     1    |")
-    print("|          |-----|---------------------|")
-    print("|          |  0  |   {}    |    {}   |".format(true0, false0))
-    print("|Predicted |     |          |          |")
-    print("|          |  1  |   {}    |    {}   |".format(true1, false1))
-    print("----------------------------------------")
-    
-    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
-    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
-    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
-    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
-    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
+            yield 1
 
 
 def main(argv):
@@ -138,10 +117,14 @@ def main(argv):
     x0_train_sample = random.sample(x0_train, int(len(x0_train)*sampleSize))
     x1_train_sample = random.sample(x1_train, int(len(x1_train)*sampleSize))
 
+    # Use Dr Arodz's code to get MAP estimate
     m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
 
-    test(m0, m1, cov, x_test, y_test)
+    # Predict labels for test set
+    labels = predict(m0, m1, cov, x_test)
 
+    # Evaluate label accuracy
+    utils.evaluate(labels, y_test)
 
 if __name__ == '__main__':
     np.set_printoptions(linewidth=500, formatter={'float_kind': lambda x: "{0:0.3f}".format(x)})

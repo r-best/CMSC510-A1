@@ -18,6 +18,9 @@ from utils import utils
 
 
 def Arodz(X, Y):
+    """Takes in two sample sets, one from each class, and
+    returns the MAP estimates of w and b
+    """
     numberOfFeatures = len(X[0])
     Y = np.reshape(Y, (len(Y), 1))
 
@@ -58,51 +61,22 @@ def Arodz(X, Y):
     return map_estimate1['estimated_w'], map_estimate1['estimated_b']
 
 
-def test(w, b, testX, testY):
+def predict(w, b, testX):
     """Uses the given estimated w and b to label the elements
-    of the given test set and checks to see how accurate the results are
+    of the given test set
 
     Arguments:
         w: Array of estimated feature weights
         b: Estimated b value
         testX: Array of test set samples
-        testY: Array of gold standard test set labels
+    
+    Yields:
+        The predicted labels for the test set
     """
-    true0 = 0
-    false0 = 0
-    true1 = 0
-    false1 = 0
-    for i, item in enumerate(testX):
+    for item in testX:
         u = T.dot(item,w) + b
         prob = 1.0 / (1.0 + T.exp(-1.0*u))
-        label = math.floor(prob.eval())
-
-        if label == 0:
-            if testY[i] == 0:
-                true0 += 1
-            else:
-                false0 += 1
-        elif label == 1:
-            if testY[i] == 1:
-                true1 += 1
-            else:
-                false1 += 1
-
-    print("----------------------------------------")
-    print("|                         Actual       |")
-    print("|          ----------------------------|")
-    print("|          |     |    0     |     1    |")
-    print("|          |-----|---------------------|")
-    print("|          |  0  |   {}    |    {}   |".format(true0, false0))
-    print("|Predicted |     |          |          |")
-    print("|          |  1  |   {}    |    {}   |".format(true1, false1))
-    print("----------------------------------------")
-    
-    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
-    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
-    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
-    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
-    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(testY), (true0+true1)/len(testY)*100))
+        yield math.floor(prob.eval())
 
 
 def main(argv):
@@ -136,9 +110,12 @@ def main(argv):
     print("Running Dr Arodz's code to obtain MAP estimates of w and b")
     w, b = Arodz(x_train_sample, y_train_sample)
 
-    # Evaluate model accuracy
+    # Predict labels for test set
     print("Testing model...")
-    test(w, b, x_test, y_test)
+    labels = predict(w, b, x_test)
+
+    # Evaluate label accuracy
+    utils.evaluate(labels, y_test)
 
 
 if __name__ == '__main__':
