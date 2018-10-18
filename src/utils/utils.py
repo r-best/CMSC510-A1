@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import metrics
 
 
 def parseArgs(argv):
@@ -125,34 +126,26 @@ def evaluate(labels, gold):
     Returns:
         None
     """
-    true0 = 0
-    false0 = 0
-    true1 = 0
-    false1 = 0
-    for i, label in enumerate(labels):
-        if label == 0:
-            if gold[i] == 0:
-                true0 += 1
-            else:
-                false0 += 1
-        elif label == 1:
-            if gold[i] == 1:
-                true1 += 1
-            else:
-                false1 += 1
-    
+    labels = list(labels)
+
+    conf_matrix = metrics.confusion_matrix(gold, labels)
+
     print("----------------------------------------")
     print("|                         Actual       |")
     print("|          ----------------------------|")
     print("|          |     |    0     |     1    |")
     print("|          |-----|---------------------|")
-    print("|          |  0  |   {}    |    {}   |".format(true0, false0))
+    print("|          |  0  |   {}    |    {}   |".format(conf_matrix[0][0], conf_matrix[0][1]))
     print("|Predicted |     |          |          |")
-    print("|          |  1  |   {}    |    {}   |".format(true1, false1))
+    print("|          |  1  |   {}    |    {}   |".format(conf_matrix[1][0], conf_matrix[1][1]))
     print("----------------------------------------")
     
-    print("Class 0 Precision: {:.3f}".format(true0 / (true0 + false0)))
-    print("Class 0 Recall: {:.3f}".format(true0 / (true0 + false1)))
-    print("Class 1 Precision: {:.3f}".format(true1 / (true1 + false1)))
-    print("Class 1 Recall: {:.3f}".format(true1 / (true1 + false0)))
-    print("Accuracy: {}/{} = {:.3f}%".format(true0+true1, len(gold), (true0+true1)/len(gold)*100))
+    precision, recall, fscore, _ = metrics.precision_recall_fscore_support(gold, labels)
+    correct = conf_matrix[0][0]+conf_matrix[1][0]
+    print("Class 0 Precision: {:.3f}".format(precision[0]))
+    print("Class 0 Recall: {:.3f}".format(recall[0]))
+    print("Class 0 F-Measure: {:.3f}".format(fscore[0]))
+    print("Class 1 Precision: {:.3f}".format(precision[1]))
+    print("Class 1 Recall: {:.3f}".format(recall[1]))
+    print("Class 1 F-Measure: {:.3f}".format(fscore[1]))
+    print("Accuracy: {}/{} = {:.3f}%".format(correct, len(gold), correct/len(gold)*100))
