@@ -11,8 +11,6 @@ import matplotlib.pyplot as plt
 import scipy as sp
 import theano.tensor as T
 import random
-import math
-from pprint import pprint
 
 from utils import utils
 
@@ -56,7 +54,6 @@ def Arodz(X, Y):
     # now perform maximum likelihood (actually, maximum a posteriori (MAP), since we have priors) estimation
     # map_estimate1 is a dictionary: "parameter name" -> "it's estimated value"
     map_estimate1 = pm.find_MAP(model=basic_model)
-    # pprint(map_estimate1)
 
     return map_estimate1['estimated_w'], map_estimate1['estimated_b']
 
@@ -76,7 +73,7 @@ def predict(w, b, testX):
     for item in testX:
         u = T.dot(item,w) + b
         prob = 1.0 / (1.0 + T.exp(-1.0*u))
-        yield math.floor(prob.eval())
+        yield int(prob.eval())
 
 
 def main(argv):
