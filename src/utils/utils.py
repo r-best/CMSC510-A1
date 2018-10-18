@@ -85,10 +85,9 @@ def featureSelection(train, test, targetSize=50):
         Train and test reduced to targetSize features
     """
     numFeatures = len(train[0])
-    numToRemove = numFeatures - targetSize
 
     # If nothing to remove, we're done
-    if numToRemove <= 0:
+    if numFeatures <= targetSize:
         return train, test
     
     train = np.transpose(train)
@@ -97,18 +96,18 @@ def featureSelection(train, test, targetSize=50):
     for feature in train:
         featureCounts.append(sum([0 if x == 0 else 1 for x in feature]))
 
-    indexesToDelete = []
-    while numToRemove > 0:
-        min = 0
+    maxIndexes = []
+    while targetSize > 0:
+        max = 0
         for i, _ in enumerate(featureCounts):
-            if featureCounts[i] < featureCounts[min]:
-                min = i
-        indexesToDelete.append(min)
-        featureCounts[min] = len(train[0])+1
-        numToRemove -= 1
+            if featureCounts[i] > featureCounts[max]:
+                max = i
+        maxIndexes.append(max)
+        featureCounts[max] = -1
+        targetSize -= 1
 
-    train = [_ for i, _ in enumerate(train) if i not in indexesToDelete]
-    test = [[_ for i, _ in enumerate(sample) if i not in indexesToDelete] for sample in test]
+    train = [_ for i, _ in enumerate(train) if i in maxIndexes]
+    test = [[_ for i, _ in enumerate(sample) if i in maxIndexes] for sample in test]
 
     return np.array(train).T, np.array(test)
 
