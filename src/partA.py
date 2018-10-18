@@ -63,28 +63,34 @@ def predict(m0, m1, cov, testX):
     and uses them to predict labels for the given test set.
 
     Arguments:
-        m0: Estimated mean of class 0
-        m1: Estimated mean of class 1
-        cov: Estimated covariance
-        testX: Array of test set samples to label
+        m0: array-like (1D)
+            Estimated mean of class 0
+        m1: array-like (1D)
+            Estimated mean of class 1
+        cov: array-like (2D)
+            Estimated covariance
+        testX: array-like (2D)
+            Array of test set samples to label
     
     Yields:
         The predicted labels for the test set
     """
+    m0 = np.atleast_2d(m0)
+    m1 = np.atleast_2d(m1)
     cov = np.linalg.inv(cov)
 
     for item in testX:
-        dist0 = np.subtract(item, m0).reshape((1, len(item)))
-        dist0_t = np.transpose(dist0)
-        prob0 = -1*np.matmul(np.matmul(dist0, cov), dist0_t)
+        item = np.atleast_2d(item)
 
-        dist1 = np.subtract(item, m1).reshape((1, len(item)))
-        dist1_t = np.transpose(dist1)
-        prob1 = -1*np.matmul(np.matmul(dist1, cov), dist1_t)
+        dist0 = np.subtract(item, m0)
+        prob0 = np.matmul(np.matmul(dist0, cov), dist0.T)
 
-        if prob0 > prob1:
+        dist1 = np.subtract(item, m1)
+        prob1 = np.matmul(np.matmul(dist1, cov), dist1.T)
+
+        if prob0 < prob1:
             yield 0
-        if prob1 > prob0:
+        if prob0 > prob1:
             yield 1
 
 
