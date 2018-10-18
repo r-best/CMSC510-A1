@@ -141,7 +141,7 @@ def evaluate(labels, gold):
     print("----------------------------------------")
     
     precision, recall, fscore, _ = metrics.precision_recall_fscore_support(gold, labels)
-    correct = conf_matrix[0][0]+conf_matrix[1][0]
+    correct = conf_matrix[0][0]+conf_matrix[1][1]
     print("Class 0 Precision: {:.3f}".format(precision[0]))
     print("Class 0 Recall: {:.3f}".format(recall[0]))
     print("Class 0 F-Measure: {:.3f}".format(fscore[0]))
