@@ -59,8 +59,8 @@ def Arodz(X, Y):
 
 
 def predict(w, b, testX):
-    """Uses the given estimated w and b to label the elements
-    of the given test set
+    """Uses the given estimated w and b to predict labels for
+    the elements of the given test set using a simple linear equation
 
     Arguments:
         w: Array of estimated feature weights
@@ -101,7 +101,6 @@ def main(argv):
     sampleIndicies = random.sample(range(len(x_train)), int(len(x_train)*sampleSize))
     x_train_sample = [_ for i, _ in enumerate(x_train) if i in sampleIndicies]
     y_train_sample = [_ for i, _ in enumerate(y_train) if i in sampleIndicies]
-
 
     # Obtain MAP estimates
     print("Running Dr Arodz's code to obtain MAP estimates of w and b")

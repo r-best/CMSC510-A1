@@ -60,7 +60,9 @@ def Arodz(x0, x1):
 
 def predict(m0, m1, cov, testX):
     """Takes in the estimated covariance and class means
-    and uses them to predict labels for the given test set.
+    and uses them to predict labels for the given test set
+    using Fisher's Linear Discriminant Analysis equation:  
+    `(x-mu)*cov^-1*(x-mu)^T`
 
     Arguments:
         m0: array-like (1D)
@@ -75,10 +77,15 @@ def predict(m0, m1, cov, testX):
     Yields:
         The predicted labels for the test set
     """
+    # Make sure means are numpy matrices
     m0 = np.atleast_2d(m0)
     m1 = np.atleast_2d(m1)
-    cov = np.linalg.inv(cov)
+    cov = np.linalg.inv(cov) # Invert covariance matrix
 
+    # For each test sample, use Fisher's Linear Discriminant equation
+    # ((x-mu)*cov^-1*(x-mu)^T) to  calculate the probability for each
+    # mu, lower probability wins since I didn't multiply by -1/2 like
+    # the actual equation calls for
     for item in testX:
         item = np.atleast_2d(item)
 
@@ -120,13 +127,16 @@ def main(argv):
     x1_train = [_ for i, _ in enumerate(x_train) if y_train[i] == 1]
 
     # Take random sample of each class of training set
+    print("Sampling {}% of training set".format(sampleSize*100))
     x0_train_sample = random.sample(x0_train, int(len(x0_train)*sampleSize))
     x1_train_sample = random.sample(x1_train, int(len(x1_train)*sampleSize))
 
     # Use Dr Arodz's code to get MAP estimate
+    print("Running Dr Arodz's code to obtain MAP estimates of means and covariance")
     m0, m1, cov = Arodz(x0_train_sample, x1_train_sample)
 
     # Predict labels for test set
+    print("Testing model...")
     labels = predict(m0, m1, cov, x_test)
 
     # Evaluate label accuracy

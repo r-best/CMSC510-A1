@@ -60,7 +60,7 @@ def preprocess(X, Y, C0, C1):
     X = np.reshape(X, (len(X), len(X[0])**2))
 
     # Normalize sample values to be between 0 and 1
-    # X = [[x/256 for x in sample] for sample in X]
+    # X = [[x/256 for x in sample] for sample in X] # REMOVED, was tanking accuracy
     
     # Normalize class labels to be 0 and 1
     Y = np.fromiter((0 if y == C0 else 1 for y in Y), int)
@@ -92,10 +92,12 @@ def featureSelection(train, test, targetSize=50):
     
     train = np.transpose(train)
 
+    # Sum number of times each feature occurs across training set
     featureCounts = []
     for feature in train:
         featureCounts.append(sum([0 if x == 0 else 1 for x in feature]))
 
+    # Obtain the targetSize (50) most occurring features
     maxIndexes = []
     while targetSize > 0:
         max = 0
@@ -106,6 +108,7 @@ def featureSelection(train, test, targetSize=50):
         featureCounts[max] = -1
         targetSize -= 1
 
+    # Filter train and test sets down to just the target features
     train = [_ for i, _ in enumerate(train) if i in maxIndexes]
     test = [[_ for i, _ in enumerate(sample) if i in maxIndexes] for sample in test]
 
@@ -127,20 +130,22 @@ def evaluate(labels, gold):
     """
     labels = list(labels)
 
+    # Get confusion matrix, thanks scikit-learn!
     conf_matrix = metrics.confusion_matrix(gold, labels)
-
-    print("----------------------------------------")
-    print("|                         Actual       |")
-    print("|          ----------------------------|")
-    print("|          |     |    0     |     1    |")
-    print("|          |-----|---------------------|")
-    print("|          |  0  |   {}    |    {}   |".format(conf_matrix[0][0], conf_matrix[0][1]))
-    print("|Predicted |     |          |          |")
-    print("|          |  1  |   {}    |    {}   |".format(conf_matrix[1][0], conf_matrix[1][1]))
-    print("----------------------------------------")
+    correct = conf_matrix[0][0]+conf_matrix[1][1] # Total correct is true 0 + true 1
+    conf_matrix = [[str(x)+"  " if x <= 9 else str(x)+" " if x <= 99 else str(x) for x in row] for row in conf_matrix]
+    print("---------------------------------------")
+    print("|                        Actual       |")
+    print("|          ---------------------------|")
+    print("|          |     |    0    |     1    |")
+    print("|          |-----+---------+----------|")
+    print("|          |  0  |   {}   |    {}   |".format(conf_matrix[0][0], conf_matrix[0][1]))
+    print("|Predicted |     |         |          |")
+    print("|          |  1  |   {}   |    {}   |".format(conf_matrix[1][0], conf_matrix[1][1]))
+    print("---------------------------------------")
     
+    # Get precision/recall/f-measure for both classes with one method call, thanks scikit-learn!
     precision, recall, fscore, _ = metrics.precision_recall_fscore_support(gold, labels)
-    correct = conf_matrix[0][0]+conf_matrix[1][1]
     print("Class 0 Precision: {:.3f}".format(precision[0]))
     print("Class 0 Recall: {:.3f}".format(recall[0]))
     print("Class 0 F-Measure: {:.3f}".format(fscore[0]))
